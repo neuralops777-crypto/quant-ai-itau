@@ -1,0 +1,53 @@
+data:
+  start: "2018-01-01"
+  end: null          # null = hoje
+  interval: "1d"
+
+universe:
+  stocks_br:
+    - "ITUB4.SA"
+    - "BBDC4.SA"
+    - "BBAS3.SA"
+    - "PETR4.SA"
+    - "VALE3.SA"
+    - "WEGE3.SA"
+    - "ABEV3.SA"
+    - "B3SA3.SA"
+    - "RENT3.SA"
+  etfs:
+    - "BOVA11.SA"
+    - "IVVB11.SA"
+  indices:
+    - "^BVSP"
+    - "^GSPC"
+
+macro_bcb_sgs:
+  selic: 432
+  ipca: 433
+  usdbrl: 1
+
+portfolio:
+  optimizer: "max_sharpe"      # markowitz | max_sharpe | min_vol
+  risk_free_rate_annual: 0.105
+  max_weight: 0.30
+  min_weight: 0.00
+  l2_reg: 0.1                  # regularização L2 no EfficientFrontier
+
+sector_map:
+  "ITUB4.SA": "Financeiro"
+  "BBDC4.SA": "Financeiro"
+  "BBAS3.SA": "Financeiro"
+  "B3SA3.SA": "Financeiro"
+  "PETR4.SA": "Energia"
+  "VALE3.SA": "Materiais Básicos"
+  "WEGE3.SA": "Industrial"
+  "ABEV3.SA": "Consumo"
+  "RENT3.SA": "Consumo"
+  "BOVA11.SA": "ETF"
+  "IVVB11.SA": "ETF"
+
+backtest:
+  rebalance: "M"
+  initial_capital: 1_000_000.0
+  transaction_cost_bps: 15     # 0.15 %
+  slippage_bps: 5              # 0.05 %

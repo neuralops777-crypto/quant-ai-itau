@@ -197,7 +197,11 @@ def main() -> None:
     bt = run_backtest(prices=prices_wide, weights_fn=weights_fn, cfg=bt_config)
 
     # Benchmark
-    bench_px = prices_wide.get("^BVSP") or prices_wide.get("BOVA11.SA")
+    bench_px = (
+    prices_wide["^BVSP"] if "^BVSP" in prices_wide.columns
+    else prices_wide["BOVA11.SA"] if "BOVA11.SA" in prices_wide.columns
+    else None
+)
     bench_ret = bench_px.pct_change().fillna(0.0) if bench_px is not None else None
 
     metrics = compute_metrics(bt, bench_ret=bench_ret, rf_annual=rf_annual)

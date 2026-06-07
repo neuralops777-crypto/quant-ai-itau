@@ -47,7 +47,7 @@ sector_map:
   "IVVB11.SA": "ETF"
 
 backtest:
-  rebalance: "M"
+  rebalance: "ME"
   initial_capital: 1_000_000.0
   transaction_cost_bps: 15     # 0.15 %
   slippage_bps: 5              # 0.05 %

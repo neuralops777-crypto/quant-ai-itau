@@ -1,0 +1,32 @@
+general:
+  horizon_days: 21
+  test_size: 0.2
+  random_state: 42
+
+features:
+  sma_windows: [5, 21, 63]
+  ema_windows: [9, 21]
+  rsi_window: 14
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  bb_window: 20
+  bb_std: 2.0
+  volatility_window: 21
+
+baseline:
+  random_forest:
+    n_estimators: 100
+    max_depth: 5
+  linear:
+    fit_intercept: true
+
+xgboost:
+  n_estimators: 200
+  max_depth: 4
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+
+llm:
+  model: claude-sonnet-4-20250514

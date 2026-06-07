@@ -46,9 +46,16 @@ WeightsFn = Callable[[pd.DataFrame], Dict[str, float]]
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
+_FREQ_ALIASES = {
+    "M": "ME",
+    "Q": "QE",
+    "A": "YE",
+    "Y": "YE",
+    "BM": "BME",
+}
 def _rebalance_dates(index: pd.DatetimeIndex, freq: str) -> set:
     """Retorna conjunto de datas de rebalanceamento."""
+    freq = _FREQ_ALIASES.get(freq.upper(), freq)  # normaliza alias
     s = pd.Series(1, index=index)
     return set(s.resample(freq).last().dropna().index.to_pydatetime().tolist())
 

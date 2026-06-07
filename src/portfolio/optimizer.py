@@ -54,6 +54,18 @@ class OptimizerConfig:
 
 
 # ---------------------------------------------------------------------------
+# Helper para construir um EfficientFrontier limpo
+# ---------------------------------------------------------------------------
+
+def _build_ef(mu: pd.Series, S: pd.DataFrame, cfg: OptimizerConfig) -> EfficientFrontier:
+    """Instancia EfficientFrontier com L2_reg já adicionado."""
+    ef = EfficientFrontier(mu, S, weight_bounds=(cfg.min_weight, cfg.max_weight))
+    if cfg.l2_reg > 0:
+        ef.add_objective(objective_functions.L2_reg, gamma=cfg.l2_reg)
+    return ef
+
+
+# ---------------------------------------------------------------------------
 # Otimização
 # ---------------------------------------------------------------------------
 
@@ -94,19 +106,28 @@ def optimize_weights(
     # Covariância com Ledoit-Wolf shrinkage (mais estável que sample_cov)
     S = risk_models.CovarianceShrinkage(prices).ledoit_wolf()
 
-    ef = EfficientFrontier(mu, S, weight_bounds=(cfg.min_weight, cfg.max_weight))
-
-    # Regularização L2 para evitar concentração extrema
-    if cfg.l2_reg > 0:
-        ef.add_objective(objective_functions.L2_reg, gamma=cfg.l2_reg)
+    ef = _build_ef(mu, S, cfg)
 
     try:
         if cfg.method == "min_vol":
             ef.min_volatility()
+
         elif cfg.method == "max_sharpe":
-            ef.max_sharpe(risk_free_rate=cfg.risk_free_rate_annual)
+            try:
+                ef.max_sharpe(risk_free_rate=cfg.risk_free_rate_annual)
+            except ValueError as sharpe_exc:
+                logger.warning(
+                    "max_sharpe falhou (nenhum ativo supera o risk-free rate). "
+                    "Usando min_volatility como fallback. "
+                    f"Detalhe: {sharpe_exc}"
+                )
+                # Recria ef — objeto fica em estado inválido após falha
+                ef = _build_ef(mu, S, cfg)
+                ef.min_volatility()
+
         elif cfg.method == "markowitz":
             ef.max_quadratic_utility()
+
         else:
             raise OptimizationError(f"Método desconhecido: {cfg.method}")
 
@@ -127,5 +148,7 @@ def optimize_weights(
         )
         return dict(weights)
 
+    except OptimizationError:
+        raise
     except Exception as exc:
         raise OptimizationError(f"Otimização falhou ({cfg.method}): {exc}") from exc

@@ -21,6 +21,19 @@ from fpdf import FPDF
 
 from src.utils.logger import get_logger
 
+def _safe(text: str) -> str:
+    """Remove caracteres fora do range latin-1 para compatibilidade com fpdf."""
+    return (
+        text
+        .replace("\u2014", "-")   # em dash —
+        .replace("\u2013", "-")   # en dash –
+        .replace("\u2018", "'")   # aspas esquerdas '
+        .replace("\u2019", "'")   # aspas direitas '
+        .replace("\u201c", '"')   # aspas duplas esquerdas "
+        .replace("\u201d", '"')   # aspas duplas direitas "
+        .encode("latin-1", errors="replace").decode("latin-1")
+    )
+
 logger = get_logger(__name__)
 
 # Paleta consistente com identidade visual financeira
@@ -202,16 +215,16 @@ def generate_report(
     pdf.set_text_color(255, 255, 255)
     pdf.set_font("Helvetica", "B", 18)
     pdf.set_y(12)
-    pdf.cell(0, 10, "Quant AI Itau — Relatorio Final", ln=True, align="C")
+    pdf.cell(0, 10, _safe("Quant AI Itau - Relatorio Final"), ln=True, align="C")
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 6, "Plataforma de Investimentos com Machine Learning e IA Generativa", ln=True, align="C")
+    pdf.cell(0, 6, _safe("Plataforma de Investimentos com Machine Learning e IA Generativa"), ln=True, align="C")
 
     pdf.set_text_color(30, 30, 30)
     pdf.set_y(48)
 
     # -------- Métricas --------
     pdf.set_font("Helvetica", "B", 13)
-    pdf.cell(0, 8, "1. Metricas de Performance", ln=True)
+    pdf.cell(0, 8, _safe("1. Metricas de Performance"), ln=True)
     pdf.set_font("Courier", "", 9)
 
     fmt_map = {
@@ -236,7 +249,7 @@ def generate_report(
 
     # -------- Pesos --------
     pdf.set_font("Helvetica", "B", 13)
-    pdf.cell(0, 8, "2. Pesos Otimizados", ln=True)
+    pdf.cell(0, 8, _safe("2. Pesos Otimizados"), ln=True)
     pdf.set_font("Courier", "", 8)
 
     header = ["Ticker", "Setor", "Peso", "Preco (R$)", "Qtd", "Valor (R$)"]
@@ -270,14 +283,14 @@ def generate_report(
     # -------- Gráficos --------
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 13)
-    pdf.cell(0, 8, "3. Graficos de Performance", ln=True)
+    pdf.cell(0, 8, _safe("3. Graficos de Performance"), ln=True)
     pdf.image(str(equity_fig), w=185)
     pdf.ln(2)
     pdf.image(str(dd_fig), w=185)
 
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 13)
-    pdf.cell(0, 8, "4. Alocacao e Exposicao Setorial", ln=True)
+    pdf.cell(0, 8, _safe("4. Alocacao e Exposicao Setorial"), ln=True)
     pdf.image(str(alloc_fig), x=15, w=90)
     pdf.image(str(sector_fig), x=110, y=pdf.get_y() - 90, w=90)
 
@@ -285,9 +298,9 @@ def generate_report(
     if llm_insights:
         pdf.add_page()
         pdf.set_font("Helvetica", "B", 13)
-        pdf.cell(0, 8, "5. Insights da IA Generativa", ln=True)
+        pdf.cell(0, 8, _safe("5. Insights da IA Generativa"), ln=True)
         pdf.set_font("Helvetica", "", 10)
-        pdf.multi_cell(0, 5, llm_insights[:4000])
+        pdf.multi_cell(0, 5, _safe(llm_insights[:4000]))
 
     pdf.output(str(out_pdf))
     logger.info("Relatorio PDF gerado", extra={"path": str(out_pdf)})
